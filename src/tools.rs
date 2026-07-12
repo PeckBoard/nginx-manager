@@ -141,10 +141,7 @@ pub fn call_tool_tool(args: serde_json::Value) -> Result<serde_json::Value, Stri
 /// Flatten the MCP `{"content":[{"type":"text",…}],"isError"?}` result the
 /// NPM server produces: errors become tool errors, JSON text comes back as
 /// JSON, anything else as `{"text": …}`.
-fn unwrap_tool_result(
-    name: &str,
-    result: &serde_json::Value,
-) -> Result<serde_json::Value, String> {
+fn unwrap_tool_result(name: &str, result: &serde_json::Value) -> Result<serde_json::Value, String> {
     let texts: Vec<&str> = result
         .get("content")
         .and_then(|c| c.as_array())
@@ -183,10 +180,7 @@ pub fn configure_tool(args: serde_json::Value) -> Result<serde_json::Value, Stri
         .and_then(|v| v.as_str())
         .map(str::trim)
         .filter(|s| !s.is_empty());
-    let verify = args
-        .get("verify")
-        .and_then(|v| v.as_bool())
-        .unwrap_or(true);
+    let verify = args.get("verify").and_then(|v| v.as_bool()).unwrap_or(true);
     if base_url.is_none() && api_key.is_none() {
         return Err(
             "nothing to configure — pass base_url and/or api_key (or use npm_status to inspect \
@@ -213,9 +207,9 @@ pub fn configure_tool(args: serde_json::Value) -> Result<serde_json::Value, Stri
         out["api_key"] = config::mask_key(key).into();
     }
     if verify {
-        match config::load().and_then(|cfg| {
-            mcp_client::initialize_fresh(&cfg).map(|(_, init)| (cfg, init))
-        }) {
+        match config::load()
+            .and_then(|cfg| mcp_client::initialize_fresh(&cfg).map(|(_, init)| (cfg, init)))
+        {
             Ok((cfg, init)) => {
                 out["verified"] = true.into();
                 if let Some(v) = init.get("serverInfo") {

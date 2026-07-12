@@ -75,9 +75,7 @@ mod entry {
 /// load, so operators can rotate keys by editing one place.
 fn init_impl(config: &str) -> String {
     let mut seeded = Vec::new();
-    if let Ok(serde_json::Value::Object(map)) =
-        serde_json::from_str::<serde_json::Value>(config)
-    {
+    if let Ok(serde_json::Value::Object(map)) = serde_json::from_str::<serde_json::Value>(config) {
         for key in ["base_url", "api_key"] {
             if let Some(v) = map.get(key).and_then(|v| v.as_str())
                 && !v.trim().is_empty()

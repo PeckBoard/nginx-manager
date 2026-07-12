@@ -76,10 +76,7 @@ pub fn load() -> Result<Config, String> {
 }
 
 pub fn get_setting(key: &str) -> Result<Option<String>, String> {
-    let out = call_host(
-        HostFn::GetPluginSetting,
-        &serde_json::json!({ "key": key }),
-    )?;
+    let out = call_host(HostFn::GetPluginSetting, &serde_json::json!({ "key": key }))?;
     Ok(match out.get("value") {
         None | Some(serde_json::Value::Null) => None,
         Some(serde_json::Value::String(s)) => Some(s.clone()),

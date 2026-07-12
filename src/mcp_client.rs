@@ -163,7 +163,10 @@ fn decode_reply(
         if let Some(err) = message.get("error") {
             return Err(rpc_error_text(err));
         }
-        return Err(format!("endpoint returned HTTP {status}: {}", snippet(body)));
+        return Err(format!(
+            "endpoint returned HTTP {status}: {}",
+            snippet(body)
+        ));
     }
     Ok(Reply::Message(message))
 }
@@ -398,7 +401,8 @@ mod tests {
 
     #[test]
     fn sse_single_event_matching_id() {
-        let body = "event: message\ndata: {\"jsonrpc\":\"2.0\",\"id\":7,\"result\":{\"ok\":true}}\n\n";
+        let body =
+            "event: message\ndata: {\"jsonrpc\":\"2.0\",\"id\":7,\"result\":{\"ok\":true}}\n\n";
         let msg = parse_sse_message(body, 7).unwrap();
         assert_eq!(msg["result"]["ok"], true);
     }
@@ -458,10 +462,7 @@ mod tests {
 
     #[test]
     fn decode_accepted_notification() {
-        assert!(matches!(
-            decode_reply(202, "", "", 0),
-            Ok(Reply::Accepted)
-        ));
+        assert!(matches!(decode_reply(202, "", "", 0), Ok(Reply::Accepted)));
     }
 
     #[test]
@@ -469,6 +470,9 @@ mod tests {
         let e = rpc_error_text(&serde_json::json!({
             "code": -32602, "message": "bad params", "data": {"field": "port"}
         }));
-        assert!(e.contains("-32602") && e.contains("bad params") && e.contains("port"), "{e}");
+        assert!(
+            e.contains("-32602") && e.contains("bad params") && e.contains("port"),
+            "{e}"
+        );
     }
 }
