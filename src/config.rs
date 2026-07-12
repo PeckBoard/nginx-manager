@@ -3,8 +3,11 @@
 //!
 //! The two values (`base_url`, `api_key`) are stored in the plugin's own
 //! settings namespace (`peckboard_get/set_plugin_setting`). They get there in
-//! one of two ways:
+//! one of three ways:
 //!
+//! - the operator edits them in Peckboard's Settings UI (Plugins →
+//!   nginx-manager → Settings) — the manifest declares both fields, and the
+//!   form writes the same settings rows read here;
 //! - the operator puts them in Peckboard's `config.json` under
 //!   `plugins.nginx-manager.config` — the plugin's `init` export seeds the
 //!   settings from that block on every (re)start, so the file wins; or
@@ -63,8 +66,9 @@ pub fn load() -> Result<Config, String> {
     let api_key = get_setting("api_key")?.unwrap_or_default();
     if base_url.trim().is_empty() || api_key.trim().is_empty() {
         return Err(
-            "nginx-manager is not configured. Set base_url (e.g. \"http://192.168.1.10:81\") and \
-             api_key (an NPM API key, \"npm_…\") with the npm_configure tool, or put them in \
+            "nginx-manager is not configured. Set the Nginx Proxy Manager URL and API key in \
+             Settings → Plugins → nginx-manager, or set base_url (e.g. \"http://192.168.1.10:81\") \
+             and api_key (an NPM API key, \"npm_…\") with the npm_configure tool, or put them in \
              Peckboard's config.json under plugins.nginx-manager.config and restart."
                 .to_string(),
         );

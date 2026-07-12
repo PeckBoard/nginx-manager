@@ -1,7 +1,8 @@
 //! The plugin manifest: identity, the single `mcp.tool.invoke` hook, the MCP
-//! tools this plugin provides (with their input schemas), and the host
-//! permissions those tools require (`provide_mcp_tools` + `http_request` for
-//! the outbound calls to the NPM instance, which may live on the LAN).
+//! tools this plugin provides (with their input schemas), the operator
+//! settings (`base_url`, `api_key`) Peckboard's Settings UI renders, and the
+//! host permissions those tools require (`provide_mcp_tools` + `http_request`
+//! for the outbound calls to the NPM instance, which may live on the LAN).
 
 /// Build the manifest JSON string returned by the `manifest` export.
 pub fn manifest_json() -> String {
@@ -17,6 +18,31 @@ pub fn manifest_json() -> String {
         // 2 s Extism call budget counts host-side HTTP time, so raise it.
         "call_timeout_secs": 120,
 
+        // Operator-editable connection settings, rendered by Peckboard's
+        // Settings UI (Plugins → nginx-manager → Settings). They live in the
+        // same plugin-settings rows `config::load` reads, so a value saved in
+        // the form is exactly what the next tool call uses — and unlike
+        // npm_configure, the key never passes through a chat transcript.
+        // Keys deliberately match the config.json seeding block.
+        "settings": [
+            {
+                "key": "base_url",
+                "title": "Nginx Proxy Manager URL",
+                "description": "Root URL of the NPM admin interface, e.g. \"http://192.168.1.10:81\" — /api/mcp is appended automatically (a full …/api/mcp URL is also accepted).",
+                "required": true,
+                "type": "url",
+                "placeholder": "http://192.168.1.10:81"
+            },
+            {
+                "key": "api_key",
+                "title": "API key",
+                "description": "NPM API key used as the Bearer token (\"npm_…\"), created in the NPM UI under API Keys — its scopes bound everything npm_call can do.",
+                "required": true,
+                "type": "string",
+                "secret": true,
+                "placeholder": "npm_…"
+            }
+        ],
         "mcp_tools": [
             {
                 "name": "npm_status",
@@ -67,7 +93,7 @@ pub fn manifest_json() -> String {
             {
                 "name": "npm_configure",
                 "title": "Configure the Nginx Proxy Manager connection",
-                "description": "Set which Nginx Proxy Manager this Peckboard talks to: base_url of the NPM admin interface (e.g. \"http://192.168.1.10:81\") and api_key (an NPM API key, \"npm_…\", created in the NPM UI under API Keys — its scopes bound everything npm_call can do). Verifies the connection by default and reports the server info. Note the key passes through the chat transcript; operators who prefer not to can instead set base_url/api_key in Peckboard's config.json under plugins.nginx-manager.config.",
+                "description": "Set which Nginx Proxy Manager this Peckboard talks to: base_url of the NPM admin interface (e.g. \"http://192.168.1.10:81\") and api_key (an NPM API key, \"npm_…\", created in the NPM UI under API Keys — its scopes bound everything npm_call can do). Verifies the connection by default and reports the server info. Note the key passes through the chat transcript; operators who prefer not to can instead set both in Settings → Plugins → nginx-manager, or in Peckboard's config.json under plugins.nginx-manager.config.",
                 "input_schema": {
                     "type": "object",
                     "properties": {
@@ -106,6 +132,17 @@ mod tests {
         assert!(!m["version"].as_str().unwrap().is_empty());
         assert_eq!(m["hooks"], serde_json::json!(["mcp.tool.invoke"]));
         assert_eq!(m["mcp_tools"].as_array().unwrap().len(), 4);
+        // Settings the operator edits in Peckboard's UI: URL + secret token,
+        // keyed exactly as config.rs reads them.
+        let settings = m["settings"].as_array().unwrap();
+        assert_eq!(settings.len(), 2);
+        assert_eq!(settings[0]["key"], "base_url");
+        assert_eq!(settings[0]["type"], "url");
+        assert_eq!(settings[0]["required"], true);
+        assert_eq!(settings[1]["key"], "api_key");
+        assert_eq!(settings[1]["type"], "string");
+        assert_eq!(settings[1]["secret"], true);
+        assert_eq!(settings[1]["required"], true);
         let perms = m["permissions"].as_array().unwrap();
         assert!(perms.contains(&serde_json::json!("provide_mcp_tools")));
         assert!(perms.contains(&serde_json::json!("http_request")));

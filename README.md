@@ -28,10 +28,15 @@ and your API key's scopes, and it doesn't bloat every session's tool list.
    - `http_request` — outbound HTTP **including private/LAN targets** (that is
      how it reaches a self-hosted NPM; approve accordingly).
 3. Configure, either
+   - **in the Settings UI** (recommended, secret-free): Settings → Plugins →
+     nginx-manager → Settings — the plugin declares `base_url` (URL) and
+     `api_key` (secret) in its manifest, so Peckboard renders the form and
+     stores both in the plugin's settings, or
    - from any session: `npm_configure` with
      `{"base_url":"http://192.168.1.10:81","api_key":"npm_…"}` (the key passes
      through the chat transcript), or
-   - secret-free, in Peckboard's `config.json` (re-applied on every start,
+   - in Peckboard's `config.json` (re-applied on every start, wins over the
+     other two):
      wins over `npm_configure`):
 
      ```json

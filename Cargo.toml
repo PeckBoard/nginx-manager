@@ -1,6 +1,6 @@
 [package]
 name = "peckboard-nginx-manager-plugin"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 description = "Manage an Nginx Proxy Manager instance from Peckboard sessions: bridges NPM's built-in MCP server (proxy hosts, redirections, streams, certificates, access lists) as MCP tools, served as a WASM plugin."
 repository = "https://github.com/PeckBoard/nginx-manager"
