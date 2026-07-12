@@ -1,0 +1,26 @@
+[package]
+name = "peckboard-nginx-manager-plugin"
+version = "0.1.0"
+edition = "2024"
+description = "Manage an Nginx Proxy Manager instance from Peckboard sessions: bridges NPM's built-in MCP server (proxy hosts, redirections, streams, certificates, access lists) as MCP tools, served as a WASM plugin."
+repository = "https://github.com/PeckBoard/nginx-manager"
+license = "MIT"
+publish = false
+
+[lib]
+# Extism loads plugins as WASM cdylibs. The compiled artifact is
+# `target/wasm32-unknown-unknown/release/peckboard_nginx_manager_plugin.wasm`.
+crate-type = ["cdylib"]
+
+[dependencies]
+# Extism Plugin Development Kit. Must stay major-version compatible with the
+# host runtime Peckboard embeds (extism 1.x — see peckboard/Cargo.toml).
+extism-pdk = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+# Smaller, self-contained wasm: strip and optimize for size.
+opt-level = "s"
+lto = true
+strip = true
